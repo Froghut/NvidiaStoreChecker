@@ -1,0 +1,61 @@
+﻿{
+  "success": true,
+  "listMap": [
+    {
+      "is_active": "false",
+      "product_url": "https://www.notebooksbilliger.de/nvidia+geforce+rtx+3070+ti+founders+edition+jiu+725375",
+      "price": "619",
+      "fe_sku": "NVGFT070T_DE",
+      "locale": "DE"
+    },
+    {
+      "is_active": "false",
+      "product_url": "https://www.notebooksbilliger.de/nvidia+geforce+rtx+3080+founders+edition+700586",
+      "price": "719",
+      "fe_sku": "NVGFT080_DE",
+      "locale": "DE"
+    },
+    {
+      "is_active": "false",
+      "product_url": "https://www.notebooksbilliger.de/nvidia+geforce+rtx+3070+founders+edition+714793",
+      "price": "519",
+      "fe_sku": "NVGFT070_DE",
+      "locale": "DE"
+    },
+    {
+      "is_active": "false",
+      "product_url": "https://www.notebooksbilliger.de/nvidia+geforce+rtx+3060+ti+founders+edition+719485",
+      "price": "419",
+      "fe_sku": "NVGFT060T_DE",
+      "locale": "DE"
+    },
+    {
+      "is_active": "false",
+      "product_url": "https://www.notebooksbilliger.de/nvidia+geforce+rtx+3080+ti+founders+edition+fe+720777",
+      "price": "1199",
+      "fe_sku": "NVGFT080T_DE",
+      "locale": "DE"
+    },
+    {
+      "is_active": "true",
+      "product_url": "https://www.notebooksbilliger.de/nvlink+bridge+4+slot+for+rtx3090+683302",
+      "price": "84.99",
+      "fe_sku": "NVLKR30S_DE",
+      "locale": "DE"
+    },
+    {
+      "is_active": "true",
+      "product_url": "https://www.notebooksbilliger.de/nvidia+shield+tv+fernbedienung+724863/eqsqid/dc16366d-ab54-4c9b-baaa-be87d0cab6e4",
+      "price": "29.99",
+      "fe_sku": "NSHRMT01_DE",
+      "locale": "DE"
+    },
+    {
+      "is_active": "false",
+      "product_url": "https://www.notebooksbilliger.de/nvidia+geforce+rtx+3090+founders+edition+asd+722486",
+      "price": "1549",
+      "fe_sku": "NVGFT090_DE",
+      "locale": "DE"
+    }
+  ]
+}
