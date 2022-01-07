@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "NvidiaStoreChecker": {
+      "commandName": "Project"
+    }
+  }
+}

@@ -1,6 +1,8 @@
 ﻿using NAudio.Wave;
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.NamingConventionBinder;
 using System.Diagnostics;
 using System.Net;
 using System.Reflection.Metadata;
@@ -15,8 +17,24 @@ namespace NvidiaStoreChecker
 {
 	class Program
 	{
-		static void Main(string[] args)
+		static int Main(string[] args)
 		{
+			var cmd = new RootCommand()
+			          {
+				          new Option<string>(new[] { "--locale", "-l" }, () => "DE", "the locale of the store to get, i.e. DE, IT, etc"),
+				          new Option<int>(new[] { "--start", "-s" }, () => 9, "The hour when to start checking"),
+				          new Option<int>(new[] { "--end", "-e" }, () => 18, "The hour when to stop checking")
+			          };
+
+			cmd.Handler = CommandHandler.Create<string, int, int>(MainLoop);
+
+			return cmd.Invoke(args);
+		}
+
+		private static void MainLoop(string locale, int start = 9, int end = 18)
+		{
+			start = Math.Clamp(start, 0, 23);
+			end = Math.Clamp(end, 0, 23);
 			HashSet<string> openedURLs = new HashSet<string>();
 
 			Random r = new Random();
@@ -28,54 +46,56 @@ namespace NvidiaStoreChecker
 			{
 				try
 				{
-					if ((DateTime.Now.Hour < 9 || DateTime.Now.Hour >= 18) && !sleeping)
+					if (start != 0 || end != 0)
 					{
-						sleeping = true;
-						Console.WriteLine("Sleeping...");
-					}
+						if ((DateTime.Now.Hour < start || DateTime.Now.Hour >= end) && !sleeping)
+						{
+							sleeping = true;
+							Console.WriteLine("Sleeping...");
+						}
 
-					while (DateTime.Now.Hour < 9 || DateTime.Now.Hour >= 18)
-					{
-						Thread.Sleep(60 * 1000);
-					}
+						while (DateTime.Now.Hour < 9 || DateTime.Now.Hour >= 18)
+						{
+							Thread.Sleep(60 * 1000);
+						}
 
-					if (sleeping)
-					{
-						sleeping = false;
-						Console.WriteLine("Looking for cards again!");
+						if (sleeping)
+						{
+							sleeping = false;
+							Console.WriteLine("Looking for cards again!");
+						}
 					}
-
 
 					WebClient wc = new WebClient();
 					wc.Headers.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36 Edg/96.0.1054.43");
 					wc.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
-					wc.Headers.Add("Host","api.store.nvidia.com");
-					wc.Headers.Add("Accept-Language","en-US,en;q=0.5");
-					wc.Headers.Add("Accept-Encoding","deflate, br");
-			
-					wc.Headers.Add("Sec-Fetch-Dest","document");
-					wc.Headers.Add("Sec-Fetch-Mode","navigate");
-					wc.Headers.Add("Sec-Fetch-Site","none");
-					wc.Headers.Add("Sec-Fetch-User","?1");
+					wc.Headers.Add("Host", "api.store.nvidia.com");
+					wc.Headers.Add("Accept-Language", "en-US,en;q=0.5");
+					wc.Headers.Add("Accept-Encoding", "deflate, br");
 
-					wc.Headers.Add("DNT","1");
+					wc.Headers.Add("Sec-Fetch-Dest", "document");
+					wc.Headers.Add("Sec-Fetch-Mode", "navigate");
+					wc.Headers.Add("Sec-Fetch-Site", "none");
+					wc.Headers.Add("Sec-Fetch-User", "?1");
 
-					wc.Headers.Add("Via","1.1 244.165.236.54");
-					wc.Headers.Add("X-Forwarded-For","244.165.236.54");
+					wc.Headers.Add("DNT", "1");
 
-					string ip = "244."+r.Next(1, 240)+".236." + r.Next(1, 240);
+					wc.Headers.Add("Via", "1.1 244.165.236.54");
+					wc.Headers.Add("X-Forwarded-For", "244.165.236.54");
+
+					string ip = $"{r.Next(1, 240)}.{r.Next(1, 240)}.{r.Next(1, 240)}.{r.Next(1, 240)}";
 					wc.Headers["Via"] = "1.1 " + ip;
 					wc.Headers["X-Forwarded-For"] = ip;
-					string json = wc.DownloadString("https://api.store.nvidia.com/partner/v1/feinventory?skus=DE&locale=DE");
+					string json = wc.DownloadString($"https://api.store.nvidia.com/partner/v1/feinventory?skus={locale}&locale={locale}");
 					NvidiaStoreJson nvidiaStoreJson = System.Text.Json.JsonSerializer.Deserialize<NvidiaStoreJson>(json);
 					if (nvidiaStoreJson != null && nvidiaStoreJson.success)
 					{
-						#if DEBUG
+#if DEBUG
 						Console.WriteLine(DateTime.Now + " success");
-						#endif
+#endif
 						foreach (ListMap map in nvidiaStoreJson.listMap)
 						{
-							if ((map.fe_sku.Contains("NVGFT070") || map.fe_sku.Contains("NVGFT080") || map.fe_sku.Contains("NVGFT060")) && map.is_active == "true")
+							if (map.fe_sku.Contains("NVGFT") && map.is_active == "true")
 							{
 								if (!openedURLs.Contains(map.product_url))
 								{
@@ -111,8 +131,6 @@ namespace NvidiaStoreChecker
 
 				Thread.Sleep(5000);
 			}
-
-			
 		}
 
 		private static void OpenUrl(string url)
@@ -124,7 +142,6 @@ namespace NvidiaStoreChecker
 			catch
 			{
 				// hack because of this: https://github.com/dotnet/corefx/issues/10361.net 6 pack everything into one exe
-
 				if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 				{
 					url = url.Replace("&", "^&");
